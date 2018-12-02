@@ -48,8 +48,36 @@ fn day2_1() -> i64 {
     doubles * triples
 }
 
-fn day2_2() -> i64 {
-    0
+fn day2_2() -> String {
+    let input = File::open("inputs/day2").expect("Error opening file");
+    let lines: Vec<String> = BufReader::new(input).lines().map(|l| l.unwrap()).collect();
+
+    for i in 0..lines.len() {
+        let current: Vec<char> = lines[i].chars().collect();
+        'line: for j in i..lines.len() {
+            let other: Vec<char> = lines[j].chars().collect();
+
+            let mut difference_index: Option<usize> = None;
+            for k in 0..current.len() {
+                let first = current[k];
+                let second = other[k];
+                if first != second {
+                    if difference_index.is_some() {
+                        continue 'line;
+                    }
+                    difference_index = Some(k);
+                }
+            }
+
+            if let Some(index) = difference_index {
+                let mut result = current.clone();
+                result.remove(index);
+                return result.into_iter().collect();
+            }
+        }
+    }
+
+    "hi".to_string()
 }
 
 fn day1_1() -> i64 {
