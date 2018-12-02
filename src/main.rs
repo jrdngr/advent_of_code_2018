@@ -33,6 +33,9 @@ fn day2_1() -> i64 {
             } else if *count == 3 {
                 triple = true;
             }
+            if double && triple {
+                break;
+            }
         }
 
         if double {
