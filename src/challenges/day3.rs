@@ -68,7 +68,7 @@ pub fn day3_1() {
 pub fn day3_2() {
     let inputs: Vec<ElfClaim> = crate::utils::get_inputs(3);
 
-    let mut possibilities: HashSet<u64> = (1..=inputs.len() as u64).collect();
+    let mut possibilities: HashSet<u64> = inputs.iter().map(|i| i.id).collect();
     let mut occupied: HashMap<(u64, u64), u64> = HashMap::new();
 
     for input in inputs.iter() {
