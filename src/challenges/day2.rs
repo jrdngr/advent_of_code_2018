@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 pub fn day2_1() {
     let inputs: Vec<String> = crate::utils::get_inputs(2);

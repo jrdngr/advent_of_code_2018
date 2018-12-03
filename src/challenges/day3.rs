@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
 use regex::Regex;
@@ -9,6 +10,23 @@ struct ElfClaim {
     pub top: u64,
     pub width: u64,
     pub height: u64,
+}
+
+impl ElfClaim {
+    pub fn points(&self) -> Vec<(u64, u64)> {
+        let mut result = Vec::new();
+
+        let right = self.left + self.width;
+        let bottom = self.top + self.height;
+
+        for x in self.left..right {
+            for y in self.top..bottom {
+                result.push((x, y));
+            }
+        }
+
+        result
+    }
 }
 
 impl FromStr for ElfClaim {
@@ -32,6 +50,45 @@ impl FromStr for ElfClaim {
 
 pub fn day3_1() {
     let inputs: Vec<ElfClaim> = crate::utils::get_inputs(3);
+
+    let mut counts: HashMap<(u64, u64), u64> = HashMap::new();
+
+    for input in inputs {
+        for point in input.points() {
+            let count = counts.entry(point).or_insert(0);
+            *count += 1;
+        }
+    }
+
+    let answer = counts.values().filter(|c| **c > 1).count();
+
+    println!("3-1: {}", answer);
 }
 
-pub fn day3_2() {}
+pub fn day3_2() {
+    let inputs: Vec<ElfClaim> = crate::utils::get_inputs(3);
+
+    let mut possibilities: HashSet<u64> = (1..=inputs.len() as u64).collect();
+    let mut occupied: HashMap<(u64, u64), u64> = HashMap::new();
+
+    for input in inputs.iter() {
+        for point in input.points() {
+            if occupied.contains_key(&point) {
+                let occupant = occupied[&point];
+                possibilities.remove(&input.id);
+                possibilities.remove(&occupant);
+                break;
+            }
+            occupied.insert(point, input.id);
+        }
+    }
+
+    if possibilities.len() != 1 {
+        println!("{:?}", possibilities);
+        panic!("More than one possibility remaining");
+    }
+
+    let answer = possibilities.iter().nth(0).unwrap();
+
+    println!("3-3: {}", answer);
+}
