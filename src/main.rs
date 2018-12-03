@@ -5,7 +5,7 @@ pub type AnyError = Box<dyn std::error::Error>;
 
 fn main() -> Result<(), AnyError> {
     run_current();
-    run_previous();
+    //run_previous();
 
     Ok(())
 }
