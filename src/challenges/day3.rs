@@ -71,13 +71,12 @@ pub fn day3_2() {
     let mut possibilities: HashSet<u64> = inputs.iter().map(|i| i.id).collect();
     let mut occupied: HashMap<(u64, u64), u64> = HashMap::new();
 
-    for input in inputs.iter() {
+    for input in inputs {
         for point in input.points() {
             if occupied.contains_key(&point) {
                 let occupant = occupied[&point];
                 possibilities.remove(&input.id);
                 possibilities.remove(&occupant);
-                break;
             }
             occupied.insert(point, input.id);
         }
@@ -85,10 +84,50 @@ pub fn day3_2() {
 
     if possibilities.len() != 1 {
         println!("{:?}", possibilities);
-        panic!("More than one possibility remaining");
+        panic!(format!(
+            "{} possibilites remaining. Should be 1.",
+            possibilities.len()
+        ));
     }
 
     let answer = possibilities.iter().nth(0).unwrap();
 
-    println!("3-3: {}", answer);
+    println!("3-2: {}", answer);
+}
+
+fn draw(inputs: &[ElfClaim]) {
+    let mut occupied: HashMap<(u64, u64), Option<u64>> = HashMap::new();
+
+    let mut x_range = (0, 0);
+    let mut y_range = (0, 0);
+
+    for input in inputs {
+        for point in input.points() {
+            x_range.0 = point.0.min(x_range.0);
+            x_range.1 = point.0.max(x_range.1);
+
+            y_range.0 = point.1.min(y_range.0);
+            y_range.1 = point.1.max(y_range.1);
+
+            if occupied.contains_key(&point) {
+                occupied.insert(point, None);
+            } else {
+                occupied.insert(point, Some(input.id));
+            }
+        }
+    }
+
+    for y in y_range.0..=y_range.1 + 1 {
+        for x in x_range.0..=x_range.1 + 1 {
+            if occupied.contains_key(&(x, y)) {
+                match occupied[&(x, y)] {
+                    Some(index) => print!("{}", index),
+                    None => print!("X"),
+                }
+            } else {
+                print!(".");
+            }
+        }
+        print!("\n");
+    }
 }
