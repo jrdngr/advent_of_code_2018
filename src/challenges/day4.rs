@@ -168,6 +168,19 @@ fn total_minutes(count_map: &HashMap<MinuteId, u64>) -> u64 {
     count_map.iter().map(|(_, count)| count).sum()
 }
 
+fn most_frequent_minute(count_map: &HashMap<MinuteId, u64>) -> (MinuteId, u64) {
+    let max = count_map
+        .iter()
+        .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
+        .unwrap();
+
+    let hour = (max.0).0;
+    let minute = (max.0).1;
+    let count = *max.1;
+
+    ((hour, minute), count)
+}
+
 pub fn day4_1() {
     let inputs: Vec<String> = crate::utils::get_inputs(4);
 
@@ -198,6 +211,33 @@ pub fn day4_1() {
 }
 
 pub fn day4_2() {
-    let answer = 0;
+    let inputs: Vec<String> = crate::utils::get_inputs(4);
+
+    let events: Vec<Event> = inputs.iter().map(|i| Event::from_str(i).unwrap()).collect();
+    let counts = minute_counts_by_id(events);
+
+    let max_entry = counts
+        .iter()
+        .max_by(|(_, c1), (_, c2)| {
+            let c1_mf = most_frequent_minute(c1);
+            let c2_mf = most_frequent_minute(c2);
+            c1_mf.cmp(&c2_mf)
+        })
+        .unwrap();
+
+    let max_minute_id = max_entry
+        .1
+        .iter()
+        .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
+        .unwrap()
+        .0;
+
+    let max_id = u64::from(*max_entry.0);
+    let max_minute = u64::from(max_minute_id.1);
+
+    println!("{} {}", max_id, max_minute);
+
+    let answer = max_id * max_minute;
+
     println!("4-2: {}", answer);
 }
