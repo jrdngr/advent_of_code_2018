@@ -11,8 +11,8 @@ fn main() -> Result<(), AnyError> {
 }
 
 fn run_current() {
-    challenges::day3::day3_1();
-    challenges::day3::day3_2();
+    challenges::day4::day4_1();
+    challenges::day4::day4_2();
 }
 
 fn run_previous() {
@@ -20,4 +20,6 @@ fn run_previous() {
     challenges::day1::day1_2();
     challenges::day2::day2_1();
     challenges::day2::day2_2();
+    challenges::day3::day3_1();
+    challenges::day3::day3_2();
 }
