@@ -11,7 +11,7 @@ fn main() -> Result<(), AnyError> {
 }
 
 fn run_current() {
-    challenges::day4::day4_1();
+    //challenges::day4::day4_1();
     challenges::day4::day4_2();
 }
 

@@ -229,11 +229,10 @@ pub fn day4_2() {
         .1
         .iter()
         .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
-        .unwrap()
-        .0;
+        .unwrap();
 
     let max_id = u64::from(*max_entry.0);
-    let max_minute = u64::from(max_minute_id.1);
+    let max_minute = u64::from((*max_minute_id.0).1);
 
     println!("{} {}", max_id, max_minute);
 
