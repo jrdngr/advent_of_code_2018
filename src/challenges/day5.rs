@@ -19,36 +19,26 @@ pub fn day5_1() -> Result<()> {
 pub fn day5_2() {}
 
 #[derive(Debug)]
-struct PolymerNode {
-    pub value: u32,
-    pub next: Option<Rc<PolymerNode>>,
-    pub prev: Option<Rc<PolymerNode>>,
-}
-
-#[derive(Debug)]
 struct Polymer {
-    chain: Option<Rc<PolymerNode>>,
+    units: Vec<u32>,
 }
 
 impl FromStr for Polymer {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let values: Vec<u32> = s.chars().map(u32::from).collect();
-
-        Ok(Polymer { chain: None })
+        let units: Vec<u32> = s.chars().map(u32::from).collect();
+        Ok(Polymer { units })
     }
 }
 
 impl Display for Polymer {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut polymer_string: String = String::new();
-
-        for node in &self.chain {
-            let c = std::char::from_u32(node.value).unwrap();
-            polymer_string.push(c);
-        }
-
+        let polymer_string: String = self
+            .units
+            .iter()
+            .map(|c| std::char::from_u32(*c).unwrap())
+            .collect();
         write!(f, "{}", polymer_string)
     }
 }
@@ -61,33 +51,6 @@ impl Polymer {
         let min = n1.min(n2);
 
         max - min == 32
-    }
-}
-
-#[derive(Debug)]
-struct PolymerIterator {
-    pub current: Option<Rc<PolymerNode>>,
-}
-
-impl Iterator for PolymerIterator {
-    type Item = Rc<PolymerNode>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match &self.current {
-            Some(node) => Some(node.clone()),
-            None => None,
-        }
-    }
-}
-
-impl IntoIterator for Polymer {
-    type Item = Rc<PolymerNode>;
-    type IntoIter = PolymerIterator;
-
-    fn into_iter(self) -> Self::IntoIter {
-        PolymerIterator {
-            current: self.chain,
-        }
     }
 }
 
