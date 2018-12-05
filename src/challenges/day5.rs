@@ -1,7 +1,6 @@
 use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufReader, Read};
-use std::rc::Rc;
 use std::str::FromStr;
 
 use crate::Result;
@@ -11,7 +10,7 @@ pub fn day5_1() -> Result<()> {
     let mut polymer = Polymer::from_str(&input)?;
     polymer.reduce();
 
-    println!("{}", polymer);
+    println!("4-1: {}", polymer.len());
 
     Ok(())
 }
@@ -44,7 +43,52 @@ impl Display for Polymer {
 }
 
 impl Polymer {
-    pub fn reduce(&mut self) {}
+    pub fn len(&self) -> usize {
+        self.units.len()
+    }
+
+    pub fn reduce(&mut self) {
+        while self.reduction_pass() > 0 {
+            continue;
+        }
+    }
+
+    fn reduction_pass(&mut self) -> u64 {
+        if self.units.len() < 2 {
+            return 0;
+        }
+
+        let mut result: Vec<Option<u32>> = self.units.iter().map(|u| Some(*u)).collect();
+
+        let mut cursor1 = 0;
+        let mut cursor2 = 1;
+        let mut annihilation_count = 0;
+
+        while cursor2 < result.len() {
+            if let Some(v1) = result[cursor1] {
+                if let Some(v2) = result[cursor2] {
+                    if Polymer::should_annihilate(v1, v2) {
+                        annihilation_count += 1;
+                        result[cursor1] = None;
+                        result[cursor2] = None;
+                        cursor1 += 2;
+                        cursor2 += 2;
+                    } else {
+                        cursor1 += 1;
+                        cursor2 += 1;
+                    }
+                }
+            }
+        }
+
+        self.units = result
+            .iter()
+            .filter(|u| u.is_some())
+            .map(|u| u.unwrap())
+            .collect();
+
+        annihilation_count
+    }
 
     fn should_annihilate(n1: u32, n2: u32) -> bool {
         let max = n1.max(n2);
@@ -65,8 +109,5 @@ fn get_input() -> Result<String> {
         input.pop();
     }
 
-    Ok(TEST_INPUT.to_string())
-    //Ok(input.to_string())
+    Ok(input.to_string())
 }
-
-const TEST_INPUT: &str = "aAcCbBEgfdgDFggdtJjrRrrOhhHHJhDdJkALJjjKkKHfJjlkrGggG";
