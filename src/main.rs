@@ -11,8 +11,8 @@ fn main() -> Result<()> {
 }
 
 fn run_current() -> Result<()> {
-    challenges::day5::day5_1()?;
-    challenges::day5::day5_2();
+    challenges::day4::day4_1();
+    challenges::day4::day4_2();
 
     Ok(())
 }
@@ -26,6 +26,8 @@ fn run_previous() -> Result<()> {
     challenges::day3::day3_2();
     challenges::day4::day4_1();
     challenges::day4::day4_2();
+    challenges::day5::day5_1()?;
+    challenges::day5::day5_2()?;
 
     Ok(())
 }

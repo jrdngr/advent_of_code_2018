@@ -5,22 +5,77 @@ use std::str::FromStr;
 use regex::Regex;
 
 pub type ID = u16;
-pub type Hour = u8;
 pub type Minute = u8;
 
-pub type MinuteId = (Hour, Minute);
+pub fn day4_1() {
+    let inputs: Vec<String> = crate::utils::get_inputs(4);
+
+    let events: Vec<Event> = inputs.iter().map(|i| Event::from_str(i).unwrap()).collect();
+    let counts = minute_counts_by_id(events);
+
+    let max_id = counts
+        .iter()
+        .max_by(|(_, c1), (_, c2)| {
+            let min1 = total_minutes(c1);
+            let min2 = total_minutes(c2);
+            min1.cmp(&min2)
+        })
+        .unwrap()
+        .0;
+
+    let sleepy_guy_counts = &counts[max_id];
+
+    let best_minute = sleepy_guy_counts
+        .iter()
+        .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
+        .unwrap()
+        .0;
+
+    let answer = u64::from(*max_id) * u64::from(*best_minute);
+
+    println!("4-1: {}", answer);
+}
+
+pub fn day4_2() {
+    let inputs: Vec<String> = crate::utils::get_inputs(4);
+
+    let events: Vec<Event> = inputs.iter().map(|i| Event::from_str(i).unwrap()).collect();
+    let counts = minute_counts_by_id(events);
+
+    let max_entry = counts
+        .iter()
+        .max_by(|(_, c1), (_, c2)| {
+            let c1_mf = most_frequent_minute(c1);
+            let c2_mf = most_frequent_minute(c2);
+            c1_mf.1.cmp(&c2_mf.1)
+        })
+        .unwrap();
+
+    let max_minute_id = max_entry
+        .1
+        .iter()
+        .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
+        .unwrap();
+
+    let max_id = u64::from(*max_entry.0);
+    let max_minute = u64::from(*max_minute_id.0);
+
+    let answer = max_id * max_minute;
+
+    println!("4-2: {}", answer);
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Date {
     pub year: u16,
     pub month: u8,
     pub day: u8,
-    pub hour: Hour,
+    pub hour: u8,
     pub minute: Minute,
 }
 
 impl Date {
-    pub fn minute_list(d1: &Date, d2: &Date) -> Vec<MinuteId> {
+    pub fn minute_list(d1: &Date, d2: &Date) -> Vec<Minute> {
         let mut result = Vec::new();
 
         if d1 == d2 {
@@ -30,26 +85,8 @@ impl Date {
         let first = d1.min(d2);
         let second = d1.max(d2);
 
-        if first.hour == 23 {
-            if second.hour == 23 {
-                for min in first.minute..second.minute {
-                    result.push((23, min));
-                }
-            } else {
-                for min in first.minute..60 {
-                    result.push((23, min));
-                }
-
-                if second.minute > 0 {
-                    for min in 0..second.minute {
-                        result.push((0, min));
-                    }
-                }
-            }
-        } else {
-            for min in first.minute..second.minute {
-                result.push((0, min));
-            }
+        for min in first.minute..second.minute {
+            result.push(min);
         }
 
         result
@@ -138,10 +175,10 @@ impl FromStr for Event {
     }
 }
 
-fn minute_counts_by_id(mut events: Vec<Event>) -> HashMap<ID, HashMap<MinuteId, u64>> {
+fn minute_counts_by_id(mut events: Vec<Event>) -> HashMap<ID, HashMap<Minute, u64>> {
     events.sort_by(|e1, e2| e1.date().cmp(e2.date()));
 
-    let mut result: HashMap<ID, HashMap<MinuteId, u64>> = HashMap::new();
+    let mut result: HashMap<ID, HashMap<Minute, u64>> = HashMap::new();
 
     let mut current_id = 0;
     let mut start_date = Date::default();
@@ -164,79 +201,15 @@ fn minute_counts_by_id(mut events: Vec<Event>) -> HashMap<ID, HashMap<MinuteId, 
     result
 }
 
-fn total_minutes(count_map: &HashMap<MinuteId, u64>) -> u64 {
+fn total_minutes(count_map: &HashMap<Minute, u64>) -> u64 {
     count_map.iter().map(|(_, count)| count).sum()
 }
 
-fn most_frequent_minute(count_map: &HashMap<MinuteId, u64>) -> (MinuteId, u64) {
+fn most_frequent_minute(count_map: &HashMap<Minute, u64>) -> (Minute, u64) {
     let max = count_map
         .iter()
         .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
         .unwrap();
 
-    let hour = (max.0).0;
-    let minute = (max.0).1;
-    let count = *max.1;
-
-    ((hour, minute), count)
-}
-
-pub fn day4_1() {
-    let inputs: Vec<String> = crate::utils::get_inputs(4);
-
-    let events: Vec<Event> = inputs.iter().map(|i| Event::from_str(i).unwrap()).collect();
-    let counts = minute_counts_by_id(events);
-
-    let max_id = counts
-        .iter()
-        .max_by(|(_, c1), (_, c2)| {
-            let min1 = total_minutes(c1);
-            let min2 = total_minutes(c2);
-            min1.cmp(&min2)
-        })
-        .unwrap()
-        .0;
-
-    let sleepy_guy_counts = &counts[max_id];
-
-    let best_minute = sleepy_guy_counts
-        .iter()
-        .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
-        .unwrap()
-        .0;
-
-    let answer = u64::from(*max_id) * u64::from(best_minute.1);
-
-    println!("4-1: {}", answer);
-}
-
-pub fn day4_2() {
-    let inputs: Vec<String> = crate::utils::get_inputs(4);
-
-    let events: Vec<Event> = inputs.iter().map(|i| Event::from_str(i).unwrap()).collect();
-    let counts = minute_counts_by_id(events);
-
-    let max_entry = counts
-        .iter()
-        .max_by(|(_, c1), (_, c2)| {
-            let c1_mf = most_frequent_minute(c1);
-            let c2_mf = most_frequent_minute(c2);
-            c1_mf.cmp(&c2_mf)
-        })
-        .unwrap();
-
-    let max_minute_id = max_entry
-        .1
-        .iter()
-        .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
-        .unwrap();
-
-    let max_id = u64::from(*max_entry.0);
-    let max_minute = u64::from((*max_minute_id.0).1);
-
-    println!("{} {}", max_id, max_minute);
-
-    let answer = max_id * max_minute;
-
-    println!("4-2: {}", answer);
+    (*max.0, *max.1)
 }
