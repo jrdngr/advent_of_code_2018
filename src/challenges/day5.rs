@@ -13,7 +13,7 @@ pub fn day5_1() -> Result<()> {
 
     let answer = polymer.len();
 
-    println!("4-1: {}", answer);
+    println!("5-1: {}", answer);
 
     Ok(())
 }
@@ -37,7 +37,7 @@ pub fn day5_2() -> Result<()> {
 
     let answer = max.1;
 
-    println!("4-2: {}", answer);
+    println!("5-2: {}", answer);
 
     Ok(())
 }
