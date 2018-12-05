@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -10,14 +11,38 @@ pub fn day5_1() -> Result<()> {
     let mut polymer = Polymer::from_str(&input)?;
     polymer.reduce();
 
-    println!("4-1: {}", polymer.len());
+    let answer = polymer.len();
+
+    println!("4-1: {}", answer);
 
     Ok(())
 }
 
-pub fn day5_2() {}
+pub fn day5_2() -> Result<()> {
+    let input = get_input()?;
+    let polymer = Polymer::from_str(&input)?;
 
-#[derive(Debug)]
+    let mut counts: HashMap<u32, usize> = HashMap::new();
+
+    for unit in 65..=90 {
+        let mut new_polymer = polymer.without_unit(unit);
+        new_polymer.reduce();
+        counts.insert(unit, new_polymer.len());
+    }
+
+    let max = counts
+        .iter()
+        .min_by(|(_, ct1), (_, ct2)| ct1.cmp(ct2))
+        .unwrap();
+
+    let answer = max.1;
+
+    println!("4-2: {}", answer);
+
+    Ok(())
+}
+
+#[derive(Debug, Clone)]
 struct Polymer {
     units: Vec<u32>,
 }
@@ -43,6 +68,25 @@ impl Display for Polymer {
 }
 
 impl Polymer {
+    pub fn without_unit(&self, unit_to_remove: u32) -> Polymer {
+        let unit_pair = if unit_to_remove >= 65 && unit_to_remove <= 90 {
+            unit_to_remove + 32
+        } else if unit_to_remove >= 97 && unit_to_remove <= 122 {
+            unit_to_remove - 32
+        } else {
+            panic!("Invalid character {}", unit_to_remove);
+        };
+
+        let units = self
+            .units
+            .iter()
+            .filter(|u| **u != unit_to_remove && **u != unit_pair)
+            .cloned()
+            .collect();
+
+        Polymer { units }
+    }
+
     pub fn len(&self) -> usize {
         self.units.len()
     }
@@ -109,5 +153,8 @@ fn get_input() -> Result<String> {
         input.pop();
     }
 
+    //Ok(TEST_INPUT.to_string())
     Ok(input.to_string())
 }
+
+const TEST_INPUT: &str = "dabAcCaCBAcCcaDA";
