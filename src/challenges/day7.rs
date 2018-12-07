@@ -132,29 +132,48 @@ impl Rules {
             for step2 in steps.iter().skip(i) {
                 let second_rules = &self.rules[step2];
 
-                let cmp1 = first_rules[step2];
-                let cmp2 = second_rules[step1];
+                let cmp12 = first_rules[step2];
+                let cmp21 = second_rules[step1];
 
                 if step1 == step2 {
                     assert_eq!(
-                        cmp1, cmp2,
-                        "Reflexivity violated\n{} {} {:?} {:?}",
-                        step1, step2, cmp1, cmp2
+                        cmp12, cmp21,
+                        "Reflexivity violated\n1:{} 2:{} 12:{:?} 21:{:?}",
+                        step1, step2, cmp12, cmp21
                     );
                     assert_eq!(
-                        cmp1,
+                        cmp12,
                         Ordering::Equal,
-                        "Reflexivity violated\n{} {} {:?}",
+                        "Reflexivity violated\n1:{} 1:{} 11:{:?}",
                         step1,
                         step1,
-                        cmp1
+                        cmp12
                     );
                 } else {
                     assert_ne!(
-                        cmp1, cmp2,
-                        "Antisymmetry violated\n{} {:?}\n{} {:?}",
+                        cmp12, cmp21,
+                        "Antisymmetry violated\n1:{} rules: {:?}\n2:{} rules: {:?}",
                         step1, first_rules, step2, second_rules
                     );
+                }
+
+                for step3 in second_rules.keys() {
+                    let cmp13 = first_rules[step3];
+                    let cmp23 = second_rules[step3];
+
+                    if cmp12 == Ordering::Less && cmp23 == Ordering::Less {
+                        assert_eq!(
+                            cmp13,
+                            Ordering::Less,
+                            "Transitivity violated\n 1:{} 2:{} 3:{} -- 12:{:?} 23:{:?} 13:{:?}",
+                            step1,
+                            step2,
+                            step3,
+                            cmp12,
+                            cmp23,
+                            cmp13
+                        );
+                    }
                 }
             }
         }
