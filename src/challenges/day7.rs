@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
+use std::ops::Deref;
 use std::str::FromStr;
 
 use regex::Regex;
@@ -7,13 +8,18 @@ use regex::Regex;
 use crate::Result;
 
 pub fn day7_1() -> Result<()> {
-    let inputs: Vec<RulePair> = crate::utils::get_test_inputs(7);
+    let inputs: Vec<RulePair> = crate::utils::get_inputs(7);
 
     let rules = Rules::new(&inputs);
-    println!("{:?}", rules);
 
-    let answer = 0;
+    let mut steps: Vec<char> = rules.keys().cloned().collect();
+    steps.sort_by(|s1, s2| rules[&s2][&s1]);
+
+    let answer: String = steps.iter().collect();
+
     println!("7-1: {}", answer);
+
+    // Not BFGIKLNRTXHPUMWQVZOYJACDSE
 
     Ok(())
 }
@@ -47,6 +53,14 @@ struct Rules {
     rules: HashMap<char, HashMap<char, Ordering>>,
 }
 
+impl Deref for Rules {
+    type Target = HashMap<char, HashMap<char, Ordering>>;
+
+    fn deref(&self) -> &HashMap<char, HashMap<char, Ordering>> {
+        &self.rules
+    }
+}
+
 impl Rules {
     pub fn new(rule_pairs: &[RulePair]) -> Self {
         let mut rules = HashMap::new();
@@ -58,6 +72,12 @@ impl Rules {
             steps.insert(rule.1);
             let entry = rules.entry(rule.0).or_insert(HashMap::new());
             entry.insert(rule.1, Ordering::Greater);
+        }
+
+        for step in &steps {
+            if !rules.contains_key(step) {
+                rules.insert(*step, HashMap::new());
+            }
         }
 
         // Fill based on existing orderings
@@ -78,25 +98,22 @@ impl Rules {
         }
 
         // Fill based on incomparables
-        let mut new_pairs = Vec::new();
+        let mut new_entries: Vec<(char, char, Ordering)> = Vec::new();
         for (current_step, children) in &rules {
             for step in &steps {
                 if !children.contains_key(step) {
                     if rules[step].contains_key(current_step) {
-                        new_pairs.push(RulePair(*current_step, *step))
+                        new_entries.push((*current_step, *step, Ordering::Less))
                     } else {
-                        match current_step.cmp(step) {
-                            Ordering::Greater => new_pairs.push(RulePair(*current_step, *step)),
-                            Ordering::Less => new_pairs.push(RulePair(*step, *current_step)),
-                            _ => {}
-                        }
+                        let ordering = step.cmp(current_step);
+                        new_entries.push((*current_step, *step, ordering))
                     }
                 }
             }
         }
-        for rule in new_pairs {
+        for rule in new_entries {
             let entry = rules.entry(rule.0).or_insert(HashMap::new());
-            entry.insert(rule.1, Ordering::Greater);
+            entry.insert(rule.1, rule.2);
         }
 
         Self { rules }
