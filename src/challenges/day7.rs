@@ -86,14 +86,16 @@ impl Rules {
         // Fill based on existing orderings
         loop {
             let mut new_entries: HashSet<(char, char, Ordering)> = HashSet::new();
-            for (step, children) in &rules {
-                for (child, _) in children {
-                    if rules.contains_key(&child) {
-                        let child_rules = &rules[&child];
-                        for child_child in child_rules.keys() {
-                            if !&rules[step].contains_key(child_child) {
-                                if &rules[child] == &child_rules[child_child] {
-                                    new_entries.insert((*step, *child_child, &rules[child]));
+            for (step1, step1_rules) in &rules {
+                for (step2, cmp12) in step1_rules {
+                    if rules.contains_key(&step2) {
+                        let step2_rules = &rules[step2];
+                        for step3 in step2_rules.keys() {
+                            if step1_rules[step2] == step2_rules[step3] {
+                                if step1_rules.contains_key(step3)
+                                    && step1_rules[step3] != step1_rules[step2]
+                                {
+                                    new_entries.insert((*step1, *step3, step1_rules[step2]));
                                 }
                             }
                         }
