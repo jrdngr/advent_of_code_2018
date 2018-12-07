@@ -8,9 +8,12 @@ use regex::Regex;
 use crate::Result;
 
 pub fn day7_1() -> Result<()> {
+    debug();
+
     let inputs: Vec<RulePair> = crate::utils::get_inputs(7);
 
     let rules = Rules::new(&inputs);
+    rules.verify();
 
     let mut steps: Vec<char> = rules.keys().cloned().collect();
     steps.sort_by(|s1, s2| rules[&s2][&s1]);
@@ -48,7 +51,7 @@ impl FromStr for RulePair {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 struct Rules {
     rules: HashMap<char, HashMap<char, Ordering>>,
 }
@@ -118,4 +121,64 @@ impl Rules {
 
         Self { rules }
     }
+
+    fn verify(&self) {
+        let steps: Vec<char> = self.rules.keys().cloned().collect();
+
+        // Verify reflexivity and antisymmetry
+        for i in 0..steps.len() {
+            let step1 = &steps[i];
+            let first_rules = &self.rules[step1];
+            for step2 in steps.iter().skip(i) {
+                let second_rules = &self.rules[step2];
+
+                let cmp1 = first_rules[step2];
+                let cmp2 = second_rules[step1];
+
+                if step1 == step2 {
+                    assert_eq!(
+                        cmp1, cmp2,
+                        "Reflexivity violated\n{} {} {:?} {:?}",
+                        step1, step2, cmp1, cmp2
+                    );
+                    assert_eq!(
+                        cmp1,
+                        Ordering::Equal,
+                        "Reflexivity violated\n{} {} {:?}",
+                        step1,
+                        step1,
+                        cmp1
+                    );
+                } else {
+                    assert_ne!(
+                        cmp1, cmp2,
+                        "Antisymmetry violated\n{} {:?}\n{} {:?}",
+                        step1, first_rules, step2, second_rules
+                    );
+                }
+            }
+        }
+
+        // Verify total ordering
+        for step_rules in self.rules.values() {
+            assert_eq!(step_rules.len(), steps.len());
+        }
+    }
+}
+
+fn debug() {
+    let inputs: Vec<RulePair> = crate::utils::get_inputs(7);
+
+    let rules1 = Rules::new(&inputs);
+    rules1.verify();
+
+    let rules2 = Rules::new(&inputs);
+    rules1.verify();
+
+    let rules3 = Rules::new(&inputs);
+    rules1.verify();
+
+    assert_eq!(rules1, rules2);
+    assert_eq!(rules2, rules3);
+    assert_eq!(rules1, rules3);
 }
