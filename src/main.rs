@@ -11,8 +11,8 @@ fn main() -> Result<()> {
 }
 
 fn run_current() -> Result<()> {
-    challenges::day4::day4_1();
-    challenges::day4::day4_2();
+    challenges::day6::day6_1();
+    challenges::day6::day6_2();
 
     Ok(())
 }
