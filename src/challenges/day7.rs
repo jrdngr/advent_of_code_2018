@@ -84,36 +84,48 @@ impl Rules {
         }
 
         // Fill based on existing orderings
-        let mut new_pairs = Vec::new();
-        for (step, children) in &rules {
-            for (child, _) in children {
-                if rules.contains_key(&child) {
-                    let child_rules = &rules[&child];
-                    for child_child in child_rules.keys() {
-                        new_pairs.push(RulePair(*step, *child_child));
+        loop {
+            let mut new_entries: HashSet<(char, char, Ordering)> = HashSet::new();
+            for (step, children) in &rules {
+                for (child, _) in children {
+                    if rules.contains_key(&child) {
+                        let child_rules = &rules[&child];
+                        for child_child in child_rules.keys() {
+                            if !&rules[step].contains_key(child_child) {
+                                if &rules[child] == &child_rules[child_child] {
+                                    new_entries.insert((*step, *child_child, &rules[child]));
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-        for rule in new_pairs {
-            let entry = rules.entry(rule.0).or_insert(HashMap::new());
-            entry.insert(rule.1, Ordering::Greater);
+
+            if new_entries.is_empty() {
+                break;
+            } else {
+                for rule in new_entries {
+                    let entry = rules.entry(rule.0).or_insert(HashMap::new());
+                    entry.insert(rule.1, Ordering::Greater);
+                }
+            }
         }
 
         // Fill based on incomparables
-        let mut new_entries: Vec<(char, char, Ordering)> = Vec::new();
+        let mut new_entries: HashSet<(char, char, Ordering)> = HashSet::new();
         for (current_step, children) in &rules {
             for step in &steps {
                 if !children.contains_key(step) {
                     if rules[step].contains_key(current_step) {
-                        new_entries.push((*current_step, *step, Ordering::Less))
+                        new_entries.insert((*current_step, *step, Ordering::Less));
                     } else {
                         let ordering = step.cmp(current_step);
-                        new_entries.push((*current_step, *step, ordering))
+                        new_entries.insert((*current_step, *step, ordering));
                     }
                 }
             }
         }
+        println!("{:?}", new_entries);
         for rule in new_entries {
             let entry = rules.entry(rule.0).or_insert(HashMap::new());
             entry.insert(rule.1, rule.2);
@@ -123,7 +135,8 @@ impl Rules {
     }
 
     fn verify(&self) {
-        let steps: Vec<char> = self.rules.keys().cloned().collect();
+        let mut steps: Vec<char> = self.rules.keys().cloned().collect();
+        steps.sort();
 
         // Verify reflexivity and antisymmetry
         for i in 0..steps.len() {
@@ -171,7 +184,7 @@ impl Rules {
                             step3,
                             cmp12,
                             cmp23,
-                            cmp13
+                            cmp13,
                         );
                     }
                 }
